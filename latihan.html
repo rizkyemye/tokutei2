@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Latihan — 特定技能2号</title>
+<link rel="stylesheet" href="aset/desain.css?v=20261028">
+</head>
+<body data-page="latihan">
+<header class="atas">
+  <div class="atas-isi">
+    <a class="lambang" href="app.html">← 特定技能<b>2号</b></a>
+    <span class="atas-kanan">
+      <span class="nama-user" data-nama></span>
+      <button id="keluar" class="tombol garis" style="min-height:36px;padding:6px 12px;font-size:13px">Keluar</button>
+    </span>
+  </div>
+</header>
+<div class="bungkus">
+  <div id="kabar" class="kabar"></div>
+
+  <p class="label-kategori" id="label-sesi">Sesi</p>
+  <h1 id="judul-sesi"></h1>
+  <p class="kecil" id="info-sesi"></p>
+
+  <div id="materi" hidden>
+    <div class="kartu-lipat" id="kartu-materi">
+      <span class="sisi depan">
+        <span class="kanji" id="m-kanji"></span>
+        <span class="petunjuk">ketuk untuk lihat bacaan & arti</span>
+      </span>
+      <span class="sisi belakang">
+        <span class="yomi" id="m-kana"></span>
+        <span class="arti" id="m-arti"></span>
+        <span class="petunjuk">ketuk untuk balik</span>
+      </span>
+    </div>
+    <p class="kecil" id="m-hitung"></p>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="tombol garis" id="m-lewat" style="flex:1">Belum hafal</button>
+      <button class="tombol" id="m-hafal" style="flex:1">Sudah hafal →</button>
+    </div>
+  </div>
+
+  <div id="kuis" hidden>
+    <div class="baris-soal">
+      <span class="kecil" id="k-hitung"></span>
+      <span class="timer" id="k-timer" hidden></span>
+    </div>
+    <div class="bar-progres"><span id="k-baris"></span></div>
+    <div class="kartu-soal">
+      <p class="kecil" id="k-tipe"></p>
+      <p class="teks" id="k-tanya"></p>
+      <img class="gambar-soal" id="k-gambar" alt="piktogram" hidden>
+      <div id="k-opsi" class="opsi-satu"></div>
+      <p class="kecil jelasin" id="k-jelasin" hidden></p>
+      <div id="k-sumber"></div>
+    </div>
+    <button class="tombol penuh" id="k-lanjut-soal" hidden style="margin-top:14px">Soal berikutnya →</button>
+    <div id="k-hasil" class="peti" hidden>
+      <p class="skor-besar" id="k-skor"></p>
+        <p class="kecil" id="k-ringkas"></p>
+      <div class="rincian" id="k-rincian"></div>
+      <a class="tombol penuh" href="hari.html" id="k-lanjut" style="margin-top:10px">Kembali ke hari</a>
+    </div>
+    <p class="kecil" id="k-antre"></p>
+  </div>
+</div>
+<script src="aset/konfig.js?v=20261028"></script>
+<script type="module" src="aset/app.js?v=20261028"></script>
+</body>
+</html>

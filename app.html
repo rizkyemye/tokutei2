@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>特定技能2号 — Beranda</title>
+<link rel="stylesheet" href="aset/desain.css?v=20261028">
+</head>
+<body data-page="beranda">
+<header class="atas">
+  <div class="atas-isi">
+    <span class="lambang">特定技能<b>2号</b></span>
+    <span class="atas-kanan">
+      <span class="nama-user" data-nama></span>
+      <button id="keluar" class="tombol garis" style="min-height:34px;padding:6px 12px;font-size:13px">Keluar</button>
+    </span>
+  </div>
+</header>
+<div class="bungkus">
+
+  <div id="kabar" class="kabar"></div>
+
+  <h1 class="judul-beranda">Belajar</h1>
+  <p class="kecil">Materi dulu, lalu uji dengan kuis.</p>
+  <div class="motivasi" id="motivasi"></div>
+
+  <a class="kartu-utama" href="belajar.html">
+    <span class="kiri">
+      <span class="label">Program</span>
+      <span class="nama">Belajar 30 hari</span>
+      <span class="ket">35 kata/hari · 3 sesi · flashcard + kuis</span>
+    </span>
+    <span class="panah">→</span>
+  </a>
+
+  <p class="judul-bagian">Latihan</p>
+  <div class="grid-alat">
+    <a class="alat" href="flashcard.html"><span class="nama">Flashcard kosakata</span><span class="ket">840 kartu</span></a>
+    <a class="alat" href="kuis.html"><span class="nama">Kuis materi</span><span class="ket">10 soal acak</span></a>
+                <a class="alat" href="review.html"><span class="nama">Review salah</span><span class="ket">jawaban keliru</span></a>
+    <a class="alat" href="nilai.html"><span class="nama">Nilai</span><span class="ket">riwayat skor</span></a>
+  </div>
+
+  <p class="judul-bagian">Tab terpisah</p>
+  <a class="kartu-picto" href="picto.html">
+    <span class="kiri">
+      <span class="label">ピクトグラム</span>
+      <span class="nama">Belajar piktogram</span>
+      <span class="ket">188 ikon · flashcard + 2 kuis · di luar program 30 hari</span>
+    </span>
+    <span class="panah">→</span>
+  </a>
+
+  <p class="judul-bagian">Pengingat</p>
+  <div id="pengingat"></div>
+  <button class="tombol garis penuh" id="lihat-materi" style="margin-top:12px">Materi bacaan</button>
+  <div id="daftar" class="daftar-materi" style="margin-top:12px"></div>
+  <p class="kecil" id="versi" style="margin-top:20px;color:#8b7f97">build 28-10 · AH</p>
+</div>
+<script src="aset/konfig.js?v=20261028"></script>
+<script type="module" src="aset/app.js?v=20261028"></script>
+</body>
+</html>

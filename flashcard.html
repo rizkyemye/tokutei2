@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flashcard — 特定技能2号</title>
+<link rel="stylesheet" href="aset/desain.css?v=20261028">
+</head>
+<body data-page="kartu">
+<header class="atas">
+  <div class="atas-isi">
+    <a class="lambang" href="app.html">← 特定技能<b>2号</b></a>
+    <span class="atas-kanan">
+      <span class="kecil" id="hitung">0 / 0</span>
+      <button id="keluar" class="tombol garis" style="min-height:36px;padding:6px 12px;font-size:13px">Keluar</button>
+    </span>
+  </div>
+</header>
+
+<div class="bungkus">
+  <div id="kabar" class="kabar"></div>
+
+  <button id="kartu" class="kartu-lipat" aria-live="polite">
+    <span class="sisi depan">
+      <span class="lbl" id="depan-grup"></span>
+      <img class="kartu-gambar" id="depan-gambar" alt="" hidden>
+      <span class="kanji" id="depan-kanji"></span>
+      <span class="petunjuk">ketuk untuk lihat arti</span>
+    </span>
+    <span class="sisi belakang">
+      <span class="yomi" id="belakang-kana"></span>
+      <span class="arti" id="belakang-arti"></span>
+      <span class="petunjuk">ketuk untuk balik</span>
+    </span>
+  </button>
+
+  <div style="display:flex;gap:10px;margin-top:14px">
+    <button id="sebelum" class="tombol garis" style="flex:1">← Sebelum</button>
+    <button id="sesudah" class="tombol" style="flex:1">Lagi →</button>
+  </div>
+  <button id="acak" class="tombol garis penuh" style="margin-top:10px">Acak urutan</button>
+</div>
+
+<script src="aset/konfig.js?v=20261028"></script>
+<script type="module" src="aset/app.js?v=20261028"></script>
+</body>
+</html>

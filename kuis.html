@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kuis — 特定技能2号</title>
+<link rel="stylesheet" href="aset/desain.css?v=20261028">
+</head>
+<body data-page="kuis">
+<header class="atas">
+  <div class="atas-isi">
+    <a class="lambang" href="app.html">← 特定技能<b>2号</b></a>
+    <span class="atas-kanan">
+      <span class="nama-user" data-nama></span>
+      <button id="keluar" class="tombol garis" style="min-height:34px;padding:6px 12px;font-size:13px">Keluar</button>
+    </span>
+  </div>
+</header>
+<div class="bungkus">
+  <div id="kabar" class="kabar"></div>
+
+  <p class="label-kategori" id="label-kuis">Kuis</p>
+  <h1 id="judul-kuis">Kuis</h1>
+  <p class="kecil" id="info-kuis">Satu soal satu layar.</p>
+
+  <div id="arena">
+    <div class="baris-soal">
+      <span class="kecil" id="k-hitung">0 / 10</span>
+    </div>
+    <div class="bar-progres"><span id="k-baris"></span></div>
+
+    <div class="kartu-soal">
+      <p class="kecil" id="k-tipe"></p>
+      <p class="teks" id="k-tanya"></p>
+      <img class="gambar-soal" id="k-gambar" alt="piktogram" hidden>
+      <div id="k-opsi" class="opsi-satu"></div>
+      <p class="kecil jelasin" id="k-jelasin" hidden></p>
+      <div id="k-sumber"></div>
+    </div>
+
+    <button class="tombol penuh" id="k-lanjut" hidden style="margin-top:12px">Soal berikutnya →</button>
+  </div>
+
+  <div id="hasil" class="peti" hidden>
+    <p class="kecil" style="margin:0">Skor kamu</p>
+    <p class="skor-besar" id="skor"></p>
+    <p class="kecil" id="ringkas"></p>
+    <div class="rincian" id="rincian"></div>
+    <a class="tombol penuh" href="app.html" style="margin-top:10px">Kembali ke beranda</a>
+  </div>
+</div>
+<script src="aset/konfig.js?v=20261028"></script>
+<script type="module" src="aset/app.js?v=20261028"></script>
+</body>
+</html>

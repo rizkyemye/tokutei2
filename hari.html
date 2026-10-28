@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hari — 特定技能2号</title>
+<link rel="stylesheet" href="aset/desain.css?v=20261028">
+</head>
+<body data-page="hari">
+<header class="atas">
+  <div class="atas-isi">
+    <a class="lambang" href="app.html">← 特定技能<b>2号</b></a>
+    <span class="atas-kanan">
+      <span class="nama-user" data-nama></span>
+      <button id="keluar" class="tombol garis" style="min-height:36px;padding:6px 12px;font-size:13px">Keluar</button>
+    </span>
+  </div>
+</header>
+<div class="bungkus">
+  <div id="kabar" class="kabar"></div>
+
+  <p class="label-kategori" id="label-hari">Hari</p>
+  <h1 id="judul-hari">Hari 1</h1>
+  <p class="kecil" id="info-hari"></p>
+
+  <p class="judul-bagian">Sebelum sesi</p>
+  <div class="sesi" id="sesi-materi">
+    <span class="nomor">0</span>
+    <div class="isi">
+      <p class="nama-sesi">チェック materi</p>
+      <p class="ket" id="ket-materi">Flashcard: kanji → hiragana + arti</p>
+      <span class="chip" id="chip-materi"></span>
+    </div>
+    <a class="aksi" id="tombol-materi" href="latihan.html?n=1&sesi=materi">Mulai</a>
+  </div>
+
+  <p class="judul-bagian">Sesi pagi</p>
+  <details class="grup" id="grup-pagi" open>
+    <summary class="sesi kepala" id="kepala-pagi">
+      <span class="nomor">1</span>
+      <div class="isi">
+        <p class="nama-sesi">Sesi pagi</p>
+        <p class="ket">3 sub-sesi · 12 + 12 + 11 kata</p>
+        <span class="chip" id="chip-pagi"></span>
+      </div>
+      <span class="panah" aria-hidden="true">▾</span>
+    </summary>
+
+    <div class="isi-grup" id="isi-pagi">
+      <div class="sesi anak" id="sesi-pagi1">
+        <span class="nomor">1</span>
+        <div class="isi">
+          <p class="nama-sesi">Pagi 1</p>
+          <p class="ket" id="ket-pagi1">12 kata · 6 tipe soal</p>
+          <span class="chip" id="chip-pagi1"></span>
+        </div>
+        <a class="aksi" id="tombol-pagi1" href="latihan.html?n=1&sesi=pagi1">Mulai</a>
+      </div>
+      <div class="sesi anak" id="sesi-pagi2">
+        <span class="nomor">2</span>
+        <div class="isi">
+          <p class="nama-sesi">Pagi 2</p>
+          <p class="ket" id="ket-pagi2">12 kata · 6 tipe soal</p>
+          <span class="chip" id="chip-pagi2"></span>
+        </div>
+        <a class="aksi" id="tombol-pagi2" href="latihan.html?n=1&sesi=pagi2">Mulai</a>
+      </div>
+      <div class="sesi anak" id="sesi-pagi3">
+        <span class="nomor">3</span>
+        <div class="isi">
+          <p class="nama-sesi">Pagi 3</p>
+          <p class="ket" id="ket-pagi3">11 kata · 6 tipe soal</p>
+          <span class="chip" id="chip-pagi3"></span>
+        </div>
+        <a class="aksi" id="tombol-pagi3" href="latihan.html?n=1&sesi=pagi3">Mulai</a>
+      </div>
+    </div>
+  </details>
+
+  <p class="judul-bagian">Sesi lainnya</p>
+  <div class="sesi" id="sesi-siang">
+    <span class="nomor">4</span>
+    <div class="isi">
+      <p class="nama-sesi">Sesi siang</p>
+      <p class="ket" id="ket-siang">15 soal · 6 bank + 9 kosakata hari ini</p>
+      <span class="chip" id="chip-siang"></span>
+    </div>
+    <a class="aksi" id="tombol-siang" href="latihan.html?n=1&sesi=siang">Mulai</a>
+  </div>
+  <div class="sesi" id="sesi-malam">
+    <span class="nomor">5</span>
+    <div class="isi">
+      <p class="nama-sesi">Sesi malam</p>
+      <p class="ket" id="ket-malam">40 soal · 15 bank + 15 kosakata + 10 ulangan kemarin</p>
+      <span class="chip" id="chip-malam"></span>
+    </div>
+    <a class="aksi" id="tombol-malam" href="latihan.html?n=1&sesi=malam">Mulai</a>
+  </div>
+  <p class="kecil" id="versi" style="margin-top:18px;color:#b4ab99">build 28-10 · AH</p>
+</div>
+<div id="galat" style="display:none;margin-top:16px;padding:10px 12px;border-radius:10px;background:#fdecec;border:1px solid #f3c2c2;color:#8e1622;font-size:12.5px;white-space:pre-wrap"></div>
+<script>
+  window.addEventListener('error', function (e) {
+    var b = document.getElementById('galat');
+    b.style.display = 'block';
+    b.textContent += '⚠ ' + (e.message || 'error') + (e.filename ? '  (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : '') + '\n';
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var b = document.getElementById('galat');
+    b.style.display = 'block';
+    b.textContent += '⚠ ' + (e.reason && e.reason.message ? e.reason.message : e.reason) + '\n';
+  });
+</script>
+<script src="aset/konfig.js?v=20261028"></script>
+<script type="module" src="aset/app.js?v=20261028"></script>
+</body>
+</html>
