@@ -1,0 +1,7 @@
+file '/opt/data/workspace/tokutei2/video-bunpou/v1.mp4'
+file '/opt/data/workspace/tokutei2/video-bunpou/v2.mp4'
+file '/opt/data/workspace/tokutei2/video-bunpou/v3.mp4'
+file '/opt/data/workspace/tokutei2/video-bunpou/v4.mp4'
+file '/opt/data/workspace/tokutei2/video-bunpou/v5.mp4'
+file '/opt/data/workspace/tokutei2/video-bunpou/v6.mp4'
+file '/opt/data/workspace/tokutei2/video-bunpou/v7.mp4'

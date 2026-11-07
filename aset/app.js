@@ -97,10 +97,10 @@ async function halamanBeranda() {
     else document.querySelector(".bungkus")?.appendChild(kotak);
   }
 
-  const SESI = ["materi", "pagi1", "pagi2", "pagi3", "siang", "malam"];
-  const NAMA = { materi: "チェック materi", pagi1: "Pagi 1", pagi2: "Pagi 2", pagi3: "Pagi 3", siang: "Sesi siang", malam: "Sesi malam" };
+  const SESI = ["pagi1", "pagi2", "pagi3", "siang", "malam"];
+  const NAMA = { pagi1: "Pagi 1", pagi2: "Pagi 2", pagi3: "Pagi 3", siang: "Sesi siang", malam: "Sesi malam" };
 
-  let hari = 1, sesiBerikut = "materi", sisaHari = 30, galat = null;
+  let hari = 1, sesiBerikut = "pagi1", sisaHari = 30, galat = null;
   try {
     const { data: prog, error } = await db.from("progres").select("hari,sesi").eq("user_id", sesi.user.id);
     if (error) throw error;
@@ -538,7 +538,7 @@ async function halamanHari() {
   el("judul-hari").textContent = `Hari ${n}`;
   el("info-hari").textContent = `${kata.length} kata · ${[...new Set(kata.map((k) => k.grup))].length} bagian`;
 
-  const materiSelesai = !!prog[`${n}-materi`];
+  const materiSelesai = true;
 
   const setBaris = (kunci, tombol, chip, kartu, ket) => {
     const status = prog[`${n}-${kunci}`];
@@ -591,7 +591,7 @@ async function halamanHari() {
       tombol.className = "aksi kosong";
       tombol.removeAttribute("href");
       tombol.textContent = "";
-      ket.textContent = sub === 1 ? (materiSelesai ? "selesaikan Pagi 1 dulu" : "selesaikan チェック materi dulu") : `selesaikan Pagi ${sub - 1} dulu`;
+      ket.textContent = sub === 1 ? "selesaikan Pagi 1 dulu" : `selesaikan Pagi ${sub - 1} dulu`;
     }
   });
 
@@ -629,13 +629,13 @@ async function halamanHari() {
   pasang("malam", 5, !!prog[`${n}-siang`] || siangSelesai, "40 soal · 30 hari ini + 10 ulangan (3 pagi : 7 siang)", "selesaikan Sesi siang dulu");
 }
 
-/* --- sesi: materi (flashcard) atau pagi (6 tipe soal) --- */
+/* --- sesi latihan --- */
 async function halamanLatihan() {
   const sesi = await pastikanMasuk();
   if (!sesi) return;
   const params = new URLSearchParams(location.search);
   const n = Number(params.get("n") || 1);
-  const jenis = params.get("sesi") || "materi";
+  const jenis = params.get("sesi") || "pagi1";
   const semua = await semuaKata();
   const kata = kataHari(semua, n);
   el("label-sesi").textContent = `Hari ${n}`;
