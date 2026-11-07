@@ -641,9 +641,7 @@ async function halamanLatihan() {
   el("label-sesi").textContent = `Hari ${n}`;
 
   if (jenis === "materi") return sesiMateri(n, kata);
-  if (jenis === "siang" || jenis === "malam") return sesiSoal(n, jenis, kata);
-  const sub = Number(jenis.replace("pagi", "")) || 1;
-  return sesiPagi(n, kata, sub);
+  return sesiSoal(n, jenis, kata);
 }
 
 function sesiMateri(n, kata) {
@@ -685,112 +683,6 @@ function sesiMateri(n, kata) {
   gambar();
 }
 
-function sesiPagi(n, kata, sub) {
-  const judul = `Pagi ${sub}`;
-  el("judul-sesi").textContent = judul;
-  el("info-sesi").textContent = "Satu soal satu layar · salah diulang di akhir";
-  el("kuis").hidden = false;
-
-  // 35 kata -> sub 1: 12, sub 2: 12, sub 3: 11
-  const potong = Math.ceil(kata.length / 3);
-  const bagian = kata.slice((sub - 1) * potong, sub * potong);
-  const acak = (a) => a.slice().sort(() => Math.random() - 0.5);
-  const TIPE = ["kanji→kana", "kana→kanji", "kanji→arti", "arti→kanji", "arti→kana", "kana→arti"];
-
-  const bikin = (k, i) => {
-    const tipe = TIPE[i % 6];
-    const lain = acak(bagian.filter((x) => x.kanji !== k.kanji));
-    let tanya, jawab, opsi;
-    if (tipe === "kanji→kana") { tanya = k.kanji; jawab = k.kana; opsi = lain.map((x) => x.kana); }
-    if (tipe === "kana→kanji") { tanya = k.kana; jawab = k.kanji; opsi = lain.map((x) => x.kanji); }
-    if (tipe === "kanji→arti") { tanya = k.kanji; jawab = k.arti; opsi = lain.map((x) => x.arti); }
-    if (tipe === "arti→kanji") { tanya = k.arti; jawab = k.kanji; opsi = lain.map((x) => x.kanji); }
-    if (tipe === "arti→kana") { tanya = k.arti; jawab = k.kana; opsi = lain.map((x) => x.kana); }
-    if (tipe === "kana→arti") { tanya = k.kana; jawab = k.arti; opsi = lain.map((x) => x.arti); }
-    const empat = [jawab, ...acak([...new Set(opsi.filter((o) => o !== jawab))]).slice(0, 3)];
-    return { tipe, tanya, jawab, opsi: acak(empat), kata: k, salah: 0 };
-  };
-
-  const antre = acak(bagian).map((k, i) => bikin(k, i));
-  const totalUnik = antre.length;
-  let benarSekali = 0, dicoba = 0, totalMs = 0, mulaiMs = 0, selesai = false;
-
-  const catatan = [];   // rincian waktu tiap jawaban (muncul di hasil akhir)
-
-  function soalBerikut() {
-    if (!antre.length) return selesaiSesi();
-    const s = antre[0];
-    el("k-tipe").textContent = s.tipe;
-    el("k-tanya").textContent = s.tanya;
-    el("k-antre").textContent = `${antre.length} soal lagi di antrean`;
-    const maju = totalUnik - antre.length;
-    const bar = el("k-baris");
-    if (bar) bar.style.width = `${Math.round((maju / Math.max(totalUnik, 1)) * 100)}%`;
-    el("k-opsi").innerHTML = s.opsi
-      .map((o, j) => `<button class="pilihan" data-j="${j}">${o}</button>`)
-      .join("");
-    el("k-opsi").querySelectorAll(".pilihan").forEach((b) => {
-      b.onclick = () => jawab(s, Number(b.dataset.j), b);
-    });
-    mulaiMs = performance.now();
-  }
-
-  function jawab(s, j, tombol) {
-    const ms = performance.now() - mulaiMs;
-    const tepat = s.opsi[j] === s.jawab;
-    tombol.classList.add(tepat ? "benar" : "salah");
-    if (!tepat) {
-      [...el("k-opsi").querySelectorAll(".pilihan")].find((x) => x.textContent === s.jawab)?.classList.add("benar");
-      s.salah++;
-    }
-    el("k-opsi").querySelectorAll(".pilihan").forEach((x) => (x.disabled = true));
-    dicoba++;
-    catatan.push({ no: dicoba, tipe: s.tipe, tanya: s.tanya, benar: tepat, ms });
-    totalMs += ms;
-    antre.shift();
-    if (tepat) { if (s.salah === 0) benarSekali++; }
-    else { antre.push(s); }        // salah -> paling belakang antrean
-
-    setTimeout(soalBerikut, 420);
-  }
-
-  async function selesaiSesi() {
-    if (selesai) return;
-    selesai = true;
-    const ses = (await db.auth.getSession()).data.session;
-    await db.from("progres").upsert(
-      {
-        user_id: ses.user.id, hari: n, sesi: `pagi${sub}`,
-        skor: benarSekali, total: totalUnik,
-        jumlah_soal: dicoba, waktu_ms: Math.round(totalMs),
-      },
-      { onConflict: "user_id,hari,sesi" }
-    );
-    el("k-hasil").hidden = false;
-    el("k-skor").textContent = `${benarSekali}/${totalUnik}`;
-    el("k-ringkas").textContent =
-      `${dicoba} jawaban · rata-rata ${(totalMs / Math.max(dicoba, 1) / 1000).toFixed(1)} s/soal`;
-    el("k-rincian").innerHTML = catatan
-      .map((c) => `<div class="baris-rincian${c.benar ? "" : " lewat"}">
-        <span class="no">${c.no}</span>
-        <span class="kata">${c.tanya}</span>
-        <span class="tipe">${c.tipe}</span>
-        <span class="waktu">${(c.ms / 1000).toFixed(1).replace(".", ",")} s</span>
-        <span class="tanda">${c.benar ? "✓" : "✗"}</span></div>`)
-      .join("");
-    el("k-lanjut").href = `hari.html?n=${n}`;
-    el("k-opsi").innerHTML = "";
-    el("k-antre").textContent = "";
-    el("k-tanya").textContent = "";
-    el("k-tipe").textContent = "";
-  }
-
-  el("k-hasil").hidden = true;
-  soalBerikut();
-}
-
-
-/* --- sesi siang (15 soal) & malam (30 soal: 12 pagi + 18 siang + sisa hari lalu) --- */
 async function sesiSoal(n, jenis, kata) {
   el("judul-sesi").textContent = jenis === "siang" ? "Sesi siang" : "Sesi malam";
   el("info-sesi").textContent = jenis === "siang"
@@ -860,9 +752,13 @@ async function sesiSoal(n, jenis, kata) {
   const soalKata = (jml) => acakArr(kata).slice(0, jml).map((k, i2) => bikinKata(k, i2));
 
   let daftar = [];
-  if (jenis === "siang") {
-    const dariBank = potong((n * 6) % isiBank.length, 6);
-    daftar = [...dariBank, ...soalKata(9)].sort(() => Math.random() - 0.5);
+  const nomorPagi = Number(String(jenis).replace("pagi", "")) || 0;
+  if (jenis === "siang" || nomorPagi) {
+    // pagi 1-3 dan siang: bank soal + kosakata hari ini (gaya ujian)
+    const geser = jenis === "siang" ? (n * 6) % isiBank.length
+                                    : (n * 9 + nomorPagi * 3) % isiBank.length;
+    const dariBank = potong(geser, 9);
+    daftar = [...dariBank, ...soalKata(6)].sort(() => Math.random() - 0.5);
   }
 
   if (jenis === "malam") {
@@ -895,10 +791,9 @@ async function sesiSoal(n, jenis, kata) {
       soalKemarin = idKemarin.map((id) => peta.get(id)).filter(Boolean);
     }
 
-    // 40 = 15 bank + 15 kosakata hari ini + 10 ulangan kemarin
-    const dariBank = ambil(15, (n * 7) % isiBank.length, new Set(soalKemarin.map((s) => s.id)));
-    const dariKata = soalKata(15);
-    daftar = [...dariBank, ...dariKata, ...soalKemarin].sort(() => Math.random() - 0.5);
+    // 40 = 30 bank soal (gaya ujian) + 10 ulangan kemarin. Tanpa soal "cari arti" kosakata.
+    const dariBank = ambil(30, (n * 7) % isiBank.length, new Set(soalKemarin.map((s) => s.id)));
+    daftar = [...dariBank, ...soalKemarin].sort(() => Math.random() - 0.5);
   }
   const ses = (await db.auth.getSession()).data.session;
   let i = 0, benar = 0, mulaiMs = 0, kunciJawab = false;
