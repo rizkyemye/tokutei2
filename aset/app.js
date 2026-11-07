@@ -126,15 +126,32 @@ async function halamanBeranda() {
       <p style="margin:0">30 hari program sudah tuntas. Ulangi kapan saja lewat Belajar 30 hari.</p>
     </div>`;
   } else {
-    const urut = SESI.indexOf(sesiBerikut);
-    kotak.innerHTML = `<a class="kartu-ingat" href="hari.html?n=${hari}">
-      <span class="kiri">
-        <span class="label">Belum dipelajari</span>
-        <span class="nama">Hari ${hari} — ${NAMA[sesiBerikut]}</span>
-        <span class="ket">${urut} dari 6 sesi hari itu selesai · ${sisaHari} hari belum tuntas</span>
-      </span>
-      <span class="panah">→</span>
-    </a>`;
+    const TOT_SESI = 30 * SESI.length;
+    let selesaiSesi = 0, hariPenuh = 0;
+    try {
+      const { data: prog2 } = await db.from("progres").select("hari,sesi").eq("user_id", sesi.user.id);
+      const ada = new Set((prog2 || []).map((p) => `${p.hari}-${p.sesi}`));
+      selesaiSesi = SESI.reduce(
+        (n, s) => n + Array.from({ length: 30 }, (_, i) => ada.has(`${i + 1}-${s}`)).filter(Boolean).length, 0);
+      for (let n = 1; n <= 30; n++) {
+        if (SESI.every((s) => ada.has(`${n}-${s}`))) hariPenuh = n; else break;
+      }
+    } catch (_) {}
+    const pct = Math.round((selesaiSesi / TOT_SESI) * 100);
+    const urut = SESI.indexOf(sesiBerikut) + 1;
+    kotak.innerHTML = `
+      <div class="hero">
+        <div class="hero-atas">
+          <p class="hero-label">Lanjutkan</p>
+          <p class="hero-streak">${hariPenuh} hari tuntas berturut</p>
+        </div>
+        <h2 class="hero-judul">Hari ${hari} · ${NAMA[sesiBerikut]}</h2>
+        <p class="hero-ket">Sesi ${urut} dari ${SESI.length} hari ini · ${sisaHari} hari tersisa di program</p>
+        <div class="hero-bar"><span style="width:${pct}%"></span></div>
+        <p class="hero-angka"><b>${selesaiSesi}</b> / ${TOT_SESI} sesi selesai · ${pct}%</p>
+        <a class="hero-aksi" href="latihan.html?n=${hari}&sesi=${sesiBerikut}">Mulai ${NAMA[sesiBerikut]}</a>
+        <a class="hero-alt" href="belajar.html">lihat semua 30 hari</a>
+      </div>`;
   }
 
   // ---- materi bacaan (disembunyikan dulu) ----
@@ -279,7 +296,7 @@ async function halamanKuis() {
 
     const jel = el("k-jelasin");
     jel.hidden = true;
-    jel.textContent = s.penjelasan || "";
+    jel.dataset.bahas = panelBahas(s);
     el("k-sumber").innerHTML = panelSumber(s);
     el("k-lanjut").hidden = true;
     mulaiMs = performance.now();
@@ -298,11 +315,12 @@ async function halamanKuis() {
     if (tepat) benar++;
     else if (sesi) await db.from("salah").insert({ user_id: sesi.user.id, soal_id: s.id });
 
-    if (s.penjelasan) el("k-jelasin").hidden = false;
+    const jelEl = el("k-jelasin");
+    jelEl.innerHTML = jelEl.dataset.bahas || panelBahas(s);
+    jelEl.hidden = false;
     const panel = el("k-sumber").querySelector(".sumber");
     if (panel) panel.hidden = false;
 
-    if (s.penjelasan) el("k-jelasin").hidden = false;
     const pnJ = el("k-sumber").querySelector(".sumber");
     if (pnJ) pnJ.hidden = false;
     rincian.push({ no: i + 1, tanya: s.pertanyaan, benar: tepat, ms });
@@ -380,6 +398,40 @@ async function halamanKartu() {
 }
 
 
+
+
+function esc2(t) {
+  return String(t == null ? "" : t).replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function panelBahas(s) {
+  const kata = Array.isArray(s.kata) ? s.kata : (typeof s.kata === "string" ? (() => {
+    try { const v = JSON.parse(s.kata); return Array.isArray(v) ? v : []; } catch { return []; }
+  })() : []);
+  const blokKata = kata.length
+    ? `<p class="bh-lbl">Kata kunci</p>
+       <ul class="bh-kata">${kata.map((k) =>
+        `<li><b class="bh-kanji">${esc2(k.k || k.kanji || "")}</b>
+         <span class="bh-kana">${esc2(k.b || k.kana || "")}</span>
+         <span class="bh-arti">${esc2(k.a || k.arti || "")}</span></li>`).join("")}</ul>`
+    : "";
+  const idSoal = s.pertanyaan_id
+    ? `<p class="bh-id">${esc2(s.pertanyaan_id)}</p>` : "";
+  const idJelas = s.penjelasan_id
+    ? `<p class="bh-id">${esc2(s.penjelasan_id)}</p>` : "";
+  const jpJelas = s.penjelasan
+    ? `<p class="bh-jp">${esc2(s.penjelasan)}</p>` : "";
+  return `<div class="bahas">
+    <p class="bh-lbl">Soal</p>
+    <p class="bh-jp">${esc2(s.pertanyaan)}</p>
+    ${idSoal}
+    ${blokKata}
+    ${jpJelas || idJelas ? `<p class="bh-lbl">Pembahasan</p>` : ""}
+    ${jpJelas}
+    ${idJelas}
+  </div>`;
+}
 
 function panelSumber(s) {
   if (!s.bab && !s.kalimat) return "";
@@ -826,7 +878,7 @@ async function sesiSoal(n, jenis, kata) {
     // penjelasan & sumber disembunyikan sampai soal dijawab
     const jel = el("k-jelasin");
     jel.hidden = true;
-    jel.textContent = s.penjelasan || "";
+    jel.dataset.bahas = panelBahas(s);
     el("k-sumber").innerHTML = panelSumber(s);
     const pn = el("k-sumber").querySelector(".sumber");
     if (pn) pn.hidden = true;
