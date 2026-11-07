@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Try out — 特定技能2号</title>
+<link rel="stylesheet" href="aset/desain.css?v=20261107e">
+</head>
+<body data-page="tryout">
+<header class="atas">
+  <div class="atas-isi">
+    <a class="lambang" href="app.html">← 特定技能<b>2号</b></a>
+    <span class="atas-kanan">
+      <span class="nama-user" data-nama></span>
+      <button id="keluar" class="tombol garis" style="min-height:36px;padding:6px 12px;font-size:13px">Keluar</button>
+    </span>
+  </div>
+</header>
+
+<div class="bungkus">
+  <div id="kabar" class="kabar"></div>
+
+  <!-- layar pembuka -->
+  <section id="layar-mulai">
+    <p class="label-kategori">Try out</p>
+    <h1>Simulasi ujian</h1>
+    <p class="kecil">70 soal dalam 60 menit — <b>50 soal teori (学科)</b> + <b>20 soal studi kasus (実技)</b>, sesuai format ujian TG2 宿泊.</p>
+
+    <div class="peti" style="margin-top:16px">
+      <p class="judul-bagian" style="margin:0 0 10px">Komposisi</p>
+      <ul class="tryout-komposisi" id="komposisi"></ul>
+      <p class="kecil" style="margin-top:12px">Waktu <b>60 menit</b> · mundur otomatis · boleh lewati &amp; kembali · <b>lulus jika ≥90% di tiap bagian</b> · kalkulator layar ada di sistem ujian asli.</p>
+    </div>
+
+    <button id="mulai" class="tombol penuh" style="margin-top:16px">Mulai try out</button>
+    <p class="kecil" id="catatan-terakhir" style="margin-top:12px"></p>
+  </section>
+
+  <!-- layar ujian -->
+  <section id="layar-ujian" hidden>
+    <div class="tryout-bar">
+      <span class="tryout-nomor" id="t-nomor">1 / 70</span>
+      <span class="tryout-timer" id="t-timer">60:00</span>
+    </div>
+    <div class="bar-progres"><span id="t-baris"></span></div>
+
+    <div class="kartu-soal">
+      <p class="k-tipe kecil" id="t-bab"></p>
+      <p class="teks" id="t-soal"></p>
+      <img id="t-gambar" class="gambar-soal" alt="" hidden>
+      <div id="t-opsi" class="opsi-satu"></div>
+    </div>
+
+    <div class="tryout-aksi">
+      <button id="t-lewat" class="tombol garis">Lewati</button>
+      <button id="t-lanjut" class="tombol">Berikutnya</button>
+    </div>
+    <p class="kecil" id="t-status"></p>
+  </section>
+
+  <!-- layar hasil -->
+  <section id="layar-hasil" hidden>
+    <p class="label-kategori">Hasil</p>
+    <h1 id="h-judul">Selesai</h1>
+    <div class="angka-tiga">
+      <div><p class="kecil">Benar</p><p class="skor-besar" id="h-benar">0</p></div>
+      <div><p class="kecil">Salah</p><p class="skor-besar" id="h-salah">0</p></div>
+      <div><p class="kecil">Skor</p><p class="skor-besar" id="h-skor">0</p></div>
+    </div>
+    <p class="kecil" id="h-waktu"></p>
+    <div class="rincian" id="h-rincian"></div>
+    <a class="tombol penuh" href="tryout.html" style="margin-top:16px">Ulangi try out</a>
+    <a class="tombol garis penuh" href="app.html" style="margin-top:10px">Kembali ke beranda</a>
+  </section>
+</div>
+
+<script src="aset/konfig.js?v=20261107e"></script>
+<script type="module" src="aset/app.js?v=20261107e"></script>
+</body>
+</html>

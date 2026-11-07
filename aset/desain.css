@@ -369,6 +369,33 @@ form.peti .tombol { margin-top: 4px; }
 .bh-kana { font-family: var(--mono); font-size: 11.5px; color: var(--seal); letter-spacing: .02em; }
 .bh-arti { font-size: 13px; color: var(--ink-2); }
 
+/* ---------- try out ---------- */
+.tryout-bar {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin: 0 0 8px;
+}
+.tryout-nomor {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+}
+.tryout-timer {
+  font-family: var(--mono); font-size: 26px; font-weight: 500;
+  letter-spacing: -.01em; color: var(--ink); font-feature-settings: 'tnum' 1;
+}
+.tryout-timer.pet { color: var(--seal); }
+.tryout-komposisi { list-style: none; margin: 0; padding: 0; }
+.tryout-komposisi li {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 6px 0; border-bottom: 1px solid var(--rule); font-size: 13px;
+}
+.tryout-komposisi li:last-child { border-bottom: 0; }
+.tryout-komposisi li span { color: var(--ink-2); }
+.tryout-komposisi li b {
+  margin-left: auto; font-family: var(--mono); font-size: 13px; color: var(--seal);
+}
+.tryout-aksi { display: flex; gap: 10px; margin-top: 14px; }
+.tryout-aksi .tombol { flex: 1; }
+
 /* ---------- hero lanjutkan (beranda) ---------- */
 .hero {
   background: var(--ink);

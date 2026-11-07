@@ -955,6 +955,193 @@ async function halamanPicto() {
 }
 
 
+
+/* ---------------- try out ---------------- */
+const TRY_TEORI = 50;   // 学科 (written)
+const TRY_KASUS = 20;   // 実技 (praktik / studi kasus)
+const TRY_MENIT = 60;
+const TRY_LULUS = 0.90; // lulus >= 90% di tiap bagian
+
+function alokasiSeimbang(grup, total) {
+  const kunci = Object.keys(grup);
+  const bobot = kunci.map((k) => grup[k].length);
+  const jmlSemua = bobot.reduce((a, b) => a + b, 0);
+  if (!jmlSemua) return {};
+  const dasar = {}, sisa = [];
+  kunci.forEach((k, i) => {
+    const tepat = (bobot[i] / jmlSemua) * total;
+    dasar[k] = Math.max(1, Math.floor(tepat));
+    sisa.push({ k, sisa: tepat - Math.floor(tepat) });
+  });
+  let sekarang = Object.values(dasar).reduce((a, b) => a + b, 0);
+  sisa.sort((a, b) => b.sisa - a.sisa);
+  let i = 0;
+  while (sekarang > total) {
+    const k = kunci.find((kk, j) => dasar[kk] > 1 && j === i % kunci.length);
+    if (k) { dasar[k]--; sekarang--; }
+    i++;
+    if (i > kunci.length * 4) break;
+  }
+  i = 0;
+  while (sekarang < total) {
+    const k = sisa[i % sisa.length].k;
+    if (dasar[k] < grup[k].length) { dasar[k]++; sekarang++; }
+    i++;
+    if (i > kunci.length * 6) break;
+  }
+  return dasar;
+}
+
+function acakArr(a) { return a.slice().sort(() => Math.random() - 0.5); }
+
+async function halamanTryout() {
+  const sesi = await pastikanMasuk();
+  if (!sesi) return;
+
+  const { data: bank, error } = await db.from("soal").select("*").neq("kategori", "ピクトグラム").order("urutan");
+  if (error) return kabar("Gagal memuat soal: " + error.message);
+  const semua = bank || [];
+
+  // pisahkan kasus (実技) dan teori (学科)
+  const isKasus = (s) => /実技|ケース/.test(s.bab || "");
+  const kasusBank = semua.filter(isKasus);
+  const teoriBank = semua.filter((s) => !isKasus(s));
+
+  // teori: seimbang per bab
+  const grup = {};
+  teoriBank.forEach((s) => {
+    const k = (s.bab || "lain").replace(/\s+/g, " ").trim();
+    (grup[k] = grup[k] || []).push(s);
+  });
+  const kuota = alokasiSeimbang(grup, TRY_TEORI);
+  let teori = [];
+  Object.keys(kuota).forEach((k) => {
+    teori = teori.concat(acakArr(grup[k]).slice(0, kuota[k]));
+  });
+  teori = acakArr(teori).slice(0, TRY_TEORI);
+
+  const kasus = acakArr(kasusBank).slice(0, TRY_KASUS);
+  const soal = [...teori, ...kasus];
+  const batasKasus = teori.length;   // index pertama bagian kasus
+  if (!soal.length) return kabar("Belum ada soal di database.");
+
+  // tampilkan komposisi
+  const kon = el("komposisi");
+  if (kon) {
+    const hitung = {};
+    soal.forEach((s) => {
+      const k = (s.bab || "lain").replace(/\s+/g, " ").trim();
+      hitung[k] = (hitung[k] || 0) + 1;
+    });
+    kon.innerHTML =
+      `<li><span>学科 · teori (${teori.length} soal)</span><b>pilihan ganda</b></li>` +
+      Object.entries(hitung)
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, n]) => `<li><span>${k}</span><b>${n}</b></li>`).join("") +
+      `<li><span>実技 · studi kasus (${kasus.length} soal)</span><b>analisis situasi</b></li>`;
+  }
+
+  let i = 0, benar = 0, salah = 0, sisaDetik = TRY_MENIT * 60;
+  const jawaban = new Array(soal.length).fill(null);
+  const catatan = [];
+  let waktuId = null, mulaiMs = 0;
+
+  const tampilSoal = () => {
+    const s = soal[i];
+    el("t-nomor").textContent = `${i + 1} / ${soal.length}`;
+    el("t-baris").style.width = `${Math.round(((i + 1) / soal.length) * 100)}%`;
+    el("t-bab").textContent = s.bab || s.kategori || "";
+    el("t-soal").textContent = s.pertanyaan || "";
+    const g = el("t-gambar");
+    if (s.gambar) { g.src = s.gambar; g.hidden = false; } else { g.hidden = true; g.removeAttribute("src"); }
+
+    const ops = el("t-opsi");
+    const pakaiGambar = Array.isArray(s.pilihan_gambar) && s.pilihan_gambar.length;
+    if (pakaiGambar) {
+      ops.className = "pilihan-gambar";
+      ops.innerHTML = s.pilihan_gambar.map((src, j) =>
+        `<button class="pilihan opsi-gambar" data-j="${j}"><img src="${src}" alt=""></button>`).join("");
+    } else {
+      ops.className = "opsi-satu";
+      ops.innerHTML = (s.pilihan || []).map((p, j) =>
+        `<button class="pilihan" data-j="${j}">${p}</button>`).join("");
+    }
+    ops.querySelectorAll(".pilihan").forEach((b) => {
+      const j = Number(b.dataset.j);
+      if (jawaban[i] === j) b.classList.add("benar");
+      b.onclick = () => {
+        jawaban[i] = j;
+        ops.querySelectorAll(".pilihan").forEach((x) => x.classList.remove("benar"));
+        b.classList.add("benar");
+        el("t-status").textContent = `jawaban ${i + 1} tersimpan`;
+      };
+    });
+    el("t-status").textContent = jawaban[i] == null ? "belum dijawab" : `jawaban tersimpan`;
+    el("t-lanjut").textContent = i === soal.length - 1 ? "Selesai" : "Berikutnya";
+    mulaiMs = performance.now();
+  };
+
+  const selesai = async (habis = false) => {
+    clearInterval(waktuId);
+    soal.forEach((s, k) => {
+      const tepat = jawaban[k] === s.jawaban;
+      if (tepat) benar++; else salah++;
+      catatan.push({ no: k + 1, tanya: s.pertanyaan, bab: s.bab, benar: tepat });
+    });
+    el("layar-ujian").hidden = true;
+    el("layar-hasil").hidden = false;
+    const benarTeori = soal.slice(0, batasKasus).filter((s, k) => jawaban[k] === s.jawaban).length;
+    const benarKasus = soal.slice(batasKasus).filter((s, k) => jawaban[k + batasKasus] === s.jawaban).length;
+    const pctTeori = batasKasus ? Math.round((benarTeori / batasKasus) * 100) : 0;
+    const pctKasus = kasus.length ? Math.round((benarKasus / kasus.length) * 100) : 0;
+    const lulus = pctTeori >= TRY_LULUS * 100 && pctKasus >= TRY_LULUS * 100;
+    const skor = Math.round((benar / soal.length) * 100);
+    el("h-judul").textContent = (habis ? "Waktu habis · " : "") + (lulus ? "LULUS" : "BELUM LULUS");
+    el("h-benar").textContent = benar;
+    el("h-salah").textContent = salah;
+    el("h-skor").textContent = skor;
+    const ket = el("h-waktu");
+    if (ket) {
+      ket.innerHTML = `学科 <b>${pctTeori}%</b> (${benarTeori}/${batasKasus}) · ` +
+        `実技 <b>${pctKasus}%</b> (${benarKasus}/${kasus.length}) · ambang lulus 90% tiap bagian`;
+    }
+    el("h-waktu").textContent = `Skor ${skor} · waktu terpakai ${Math.floor((TRY_MENIT * 60 - sisaDetik) / 60)} menit`;
+    el("h-rincian").innerHTML = catatan.map((c) =>
+      `<div class="baris-rincian${c.benar ? "" : " lewat"}">
+        <span class="no">${c.no}</span>
+        <span class="kata">${c.tanya || ""}</span>
+        <span class="tanda">${c.benar ? "✓" : "✗"}</span>
+      </div>`).join("");
+    try {
+      await db.from("nilai").insert({ user_id: sesi.user.id, skor: benar, total: soal.length });
+    } catch (_) {}
+  };
+
+  const mulaiUjian = () => {
+    el("layar-mulai").hidden = true;
+    el("layar-ujian").hidden = false;
+    tampilSoal();
+    waktuId = setInterval(() => {
+      sisaDetik--;
+      const m = String(Math.floor(sisaDetik / 60)).padStart(2, "0");
+      const d = String(sisaDetik % 60).padStart(2, "0");
+      const t = el("t-timer");
+      t.textContent = `${m}:${d}`;
+      t.classList.toggle("me pet", sisaDetik <= 300);
+      if (sisaDetik <= 0) selesai(true);
+    }, 1000);
+  };
+
+  el("mulai").onclick = mulaiUjian;
+  el("t-lanjut").onclick = () => {
+    if (i < soal.length - 1) { i++; tampilSoal(); }
+    else selesai(false);
+  };
+  el("t-lewat").onclick = () => {
+    if (i < soal.length - 1) { i++; tampilSoal(); }
+  };
+}
+
 /* ---------------- kata motivasi harian ---------------- */
 const MOTIVASI = [
   ["継続は力なり", "けいぞくはちからなり", "Konsistensi itu kekuatan — sedikit tapi tiap hari."],
@@ -994,3 +1181,4 @@ if (halaman === "review") halamanReview();
 if (halaman === "belajar") halamanBelajar();
 if (halaman === "hari") halamanHari();
 if (halaman === "latihan") halamanLatihan();
+if (halaman === "tryout") halamanTryout();
