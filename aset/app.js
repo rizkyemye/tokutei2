@@ -316,8 +316,12 @@ async function halamanKuis() {
     else if (sesi) await db.from("salah").insert({ user_id: sesi.user.id, soal_id: s.id });
 
     const jelEl = el("k-jelasin");
-    jelEl.innerHTML = jelEl.dataset.bahas || panelBahas(s);
+    const nada = tepat
+      ? '<p class="status-jawab ok">✓ Benar</p>'
+      : `<p class="status-jawab no">✗ Salah — jawaban yang benar: ${hurufOpsi(s, s.jawaban)}</p>`;
+    jelEl.innerHTML = nada + (jelEl.dataset.bahas || panelBahas(s));
     jelEl.hidden = false;
+    tandaOpsi(el("k-opsi"), s.jawaban, j);
     const panel = el("k-sumber").querySelector(".sumber");
     if (panel) panel.hidden = false;
 
@@ -403,6 +407,23 @@ async function halamanKartu() {
 function esc2(t) {
   return String(t == null ? "" : t).replace(/[&<>"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function hurufOpsi(s, j) {
+  if (s.pilihan_gambar && s.pilihan_gambar.length) return `gambar ke-${j + 1}`;
+  return String.fromCharCode(65 + j);
+}
+
+function tandaOpsi(wadah, benarIdx, dipilih) {
+  if (!wadah) return;
+  wadah.querySelectorAll(".pilihan").forEach((b, j) => {
+    b.querySelectorAll(".tanda-opsi").forEach((x) => x.remove());
+    if (j !== benarIdx && j !== dipilih) return;
+    const t = document.createElement("span");
+    t.className = "tanda-opsi " + (j === benarIdx ? "benar" : "salah");
+    t.textContent = j === benarIdx ? "✓" : "✗";
+    b.appendChild(t);
+  });
 }
 
 function panelBahas(s) {
@@ -736,10 +757,13 @@ function sesiMateri(n, kata) {
 }
 
 async function sesiSoal(n, jenis, kata) {
-  el("judul-sesi").textContent = jenis === "siang" ? "Sesi siang" : "Sesi malam";
-  el("info-sesi").textContent = jenis === "siang"
-    ? "15 soal · 8 bank + 7 kosakata hari ini"
-    : "40 soal · 15 bank + 15 kosakata + 10 ulangan kemarin (3 pagi : 7 siang)";
+  const NAMA_SESI = { pagi1: "Pagi 1", pagi2: "Pagi 2", pagi3: "Pagi 3",
+                      siang: "Sesi siang", malam: "Sesi malam" };
+  const judul = NAMA_SESI[jenis] || "Sesi";
+  el("judul-sesi").textContent = judul;
+  el("info-sesi").textContent = jenis === "malam"
+    ? "40 soal · 30 materi hari ini + 10 ulangan kemarin"
+    : "15 soal ujian · semua dari bank 宿泊分野";
   el("kuis").hidden = false;
   el("k-lanjut-soal").hidden = false;
 
@@ -779,38 +803,13 @@ async function sesiSoal(n, jenis, kata) {
     return out;
   };
 
-  // 7 soal dari kosakata hari ini (selalu baru) + 8 dari bank soal
-  const TIPE_KATA = ["kanji→arti", "arti→kanji", "kana→arti", "arti→kana"];
-  const acakArr = (a2) => a2.slice().sort(() => Math.random() - 0.5);
-  const bikinKata = (k, idx) => {
-    const tipe = TIPE_KATA[idx % 4];
-    const lain = kata.filter((x) => x.kanji !== k.kanji);
-    let tanya, jawab, kandidat, label;
-    if (tipe === "kanji→arti") { tanya = k.kanji; jawab = k.arti; kandidat = lain.map((x) => x.arti); label = "意味"; }
-    if (tipe === "arti→kanji") { tanya = k.arti; jawab = k.kanji; kandidat = lain.map((x) => x.kanji); label = "ことば"; }
-    if (tipe === "kana→arti") { tanya = k.kana; jawab = k.arti; kandidat = lain.map((x) => x.arti); label = "意味"; }
-    if (tipe === "arti→kana") { tanya = k.arti; jawab = k.kana; kandidat = lain.map((x) => x.kana); label = "読み方"; }
-    const pengecoh = [...new Set(kandidat.filter((o) => o && o !== jawab))].slice(0, 3);
-    const pilihan = acakArr([jawab, ...pengecoh]);
-    return {
-      id: `kata-${k.id || k.kanji}-${idx}`,
-      pertanyaan: `「${tanya}」の${label}はどれですか？`,
-      pilihan,
-      jawaban: pilihan.indexOf(jawab),
-      penjelasan: `${k.kanji}（${k.kana}）— ${k.arti}`,
-      bab: "チェック materi", halaman: null, kalimat: null, pilihan_gambar: null, gambar: null,
-    };
-  };
-  const soalKata = (jml) => acakArr(kata).slice(0, jml).map((k, i2) => bikinKata(k, i2));
-
   let daftar = [];
   const nomorPagi = Number(String(jenis).replace("pagi", "")) || 0;
   if (jenis === "siang" || nomorPagi) {
-    // pagi 1-3 dan siang: bank soal + kosakata hari ini (gaya ujian)
+    // pagi 1-3 dan siang: 15 soal dari bank (gaya ujian TG2)
     const geser = jenis === "siang" ? (n * 6) % isiBank.length
                                     : (n * 9 + nomorPagi * 3) % isiBank.length;
-    const dariBank = potong(geser, 9);
-    daftar = [...dariBank, ...soalKata(6)].sort(() => Math.random() - 0.5);
+    daftar = potong(geser, 15).sort(() => Math.random() - 0.5);
   }
 
   if (jenis === "malam") {
@@ -905,7 +904,13 @@ async function sesiSoal(n, jenis, kata) {
         { onConflict: "user_id,hari,sesi,soal_id" }
       );
     }
-    if (s.penjelasan) el("k-jelasin").hidden = false;
+    const jelS = el("k-jelasin");
+    jelS.innerHTML = (tepat
+      ? '<p class="status-jawab ok">✓ Benar</p>'
+      : `<p class="status-jawab no">✗ Salah — jawaban yang benar: ${hurufOpsi(s, s.jawaban)}</p>`)
+      + (jelS.dataset.bahas || panelBahas(s));
+    jelS.hidden = false;
+    tandaOpsi(el("k-opsi"), s.jawaban, j);
     const pnJ = el("k-sumber").querySelector(".sumber");
     if (pnJ) pnJ.hidden = false;
     rincian.push({ no: i + 1, tanya: s.pertanyaan, benar: tepat, ms });

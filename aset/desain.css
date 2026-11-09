@@ -467,3 +467,26 @@ form.peti .tombol { margin-top: 4px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* ---------- status jawaban benar / salah ---------- */
+.status-jawab {
+  margin: 0 0 10px; font-weight: 700; font-size: 15px; letter-spacing: .01em;
+  padding-left: 12px; border-left: 3px solid transparent;
+}
+.status-jawab.ok { color: #1f6f4a; border-left-color: #1f6f4a; }
+.status-jawab.no { color: var(--seal); border-left-color: var(--seal); }
+.pilihan { position: relative; }
+.tanda-opsi {
+  position: absolute; top: 6px; right: 10px;
+  font-size: 15px; font-weight: 700; line-height: 1;
+}
+.tanda-opsi.benar { color: #1f6f4a; }
+.tanda-opsi.salah { color: var(--seal); }
+.opsi-gambar .tanda-opsi {
+  top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; color: #fff; font-size: 14px;
+}
+.opsi-gambar .tanda-opsi.benar { background: #1f6f4a; }
+.opsi-gambar .tanda-opsi.salah { background: var(--seal); }
+.pilihan-gambar .opsi-gambar.benar { border-color: #1f6f4a; box-shadow: 0 0 0 2px #1f6f4a inset; }
+.pilihan-gambar .opsi-gambar.salah { border-color: var(--seal); box-shadow: 0 0 0 2px var(--seal) inset; }
